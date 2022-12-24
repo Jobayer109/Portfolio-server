@@ -31,6 +31,11 @@ const dbConnect = async (req, res) => {
       const result = await projectCollection.findOne(query);
       res.send(result);
     });
+
+    app.get("/skills", async (req, res) => {
+      const result = await skillCollection.find({}).toArray();
+      res.send(result);
+    });
   } finally {
   }
 };
