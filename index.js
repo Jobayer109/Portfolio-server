@@ -1,50 +1,55 @@
 const express = require("express");
 const cors = require("cors");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+require("dotenv").config();
+
 const app = express();
 const port = process.env.PORT || 5000;
-require("dotenv").config();
 
 app.use(cors());
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.mqx9iof.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.uadfpu7.mongodb.net`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
 
-const dbConnect = async (req, res) => {
+// Connect to MongoDB and define route handlers
+async function dbConnect() {
   try {
-    const projectCollection = client.db("my_portfolio").collection("projects");
-    const skillCollection = client.db("my_portfolio").collection("skills");
+    await client.connect();
+    console.log("Connected to MongoDB");
 
+    const db = client.db("portfolio");
+    const projectCollection = db.collection("projects");
+    // const skillCollection = db.collection("skills");
+
+    // Define route handlers
     app.get("/projects", async (req, res) => {
       const projects = await projectCollection.find({}).toArray();
-      res.send(projects);
+      res.status(200).json(projects);
     });
 
     app.get("/project/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
-      const result = await projectCollection.findOne(query);
-      res.send(result);
+      const project = await projectCollection.findOne(query);
+      res.json(project);
     });
-
-    app.get("/skills", async (req, res) => {
-      const result = await skillCollection.find({}).toArray();
-      res.send(result);
-    });
-  } finally {
+  } catch (error) {
+    console.error("Error connecting to MongoDB:", error);
   }
-};
-dbConnect().catch((error) => console.log(error.message));
+}
 
-app.get("/", (req, res) => {
-  res.send("My portfolio server is running");
-});
-
-app.listen(port, () => {
-  console.log(`Portfolio server listening on port: ${port}`);
-});
+dbConnect()
+  .then(() => {
+    // Start the server
+    app.listen(port, () => {
+      console.log(`Portfolio server listening on port ${port}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Failed to connect to MongoDB:", error);
+  });
