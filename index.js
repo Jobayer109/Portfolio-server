@@ -1,27 +1,15 @@
 const express = require("express");
-// const cors = require("cors");
+const cors = require("cors");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 require("dotenv").config();
 const { ObjectId } = require("mongodb");
 
 const app = express();
 const port = process.env.PORT || 5000;
-
 app.use(express.json());
 
-// app.use(
-//   cors({
-//     origin: "*",
-//     optionsSuccessStatus: 200,
-//   })
-// );
-
-// app.use((req, res, next) => {
-//   res.setHeader("Access-Control-Allow-Origin", "*");
-//   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-//   next();
-// });
+// Enable CORS
+app.use(cors());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.uadfpu7.mongodb.net`;
 const client = new MongoClient(uri, {
@@ -39,7 +27,6 @@ async function dbConnect() {
     const db = client.db("portfolio");
     const projectCollection = db.collection("projects");
     const contributionsCollection = db.collection("contributions");
-    // const skillCollection = db.collection("skills");
 
     // Define route handlers
     app.get("/", async (req, res) => {
